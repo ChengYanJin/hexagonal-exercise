@@ -1,5 +1,7 @@
 import express from "express";
-import { MemoryUser, UserDomain } from "./UserDomain";
+import { LogNotification } from "./adapter/LogNotification";
+import { MemoryUser } from "./adapter/MemoryUser";
+import { UserDomain } from "./UserDomain";
 
 const app = express();
 const port = 3000;
@@ -9,23 +11,41 @@ app.get("/", (_req, res) => {
   res.send("Hello World!");
 });
 
-const userDomain = new UserDomain();
+const memoryRepo = new MemoryUser();
+const logService = new LogNotification();
 
-app.get("/new-user", (req, res) => {
+const userDomain = new UserDomain(memoryRepo, logService);
+
+// POST /user
+// 201 OK or KO
+// { userId: 'xcdfws' userName: 'yanjin' }
+
+app.get("/user", (req, res) => {
   // Create User
   // Domain
   // create-user in database
   // send notification
-  if (req.query.name && req.query.email) {
-    userDomain.create("yanjin", "yanjin@test.com");
+  if (
+    typeof req.query.name === "string" &&
+    typeof req.query.email === "string" &&
+    req.query.name &&
+    req.query.email
+  ) {
+    userDomain.create(req.query.name, req.query.email);
     res.send("We are going to create a user for you, please wait !");
   } else {
     res.send({ message: "Please provide name and email" });
   }
 });
 
-app.get("/users", (req, res) => {
-  res.send({ message: "WIP" });
+app.get("/users", async (req, res) => {
+  const users = await userDomain.list();
+  console.log("users", users);
+  res.send(users);
+  // [
+  //   { userName: "yanjin", userId: "vsdvsd" },
+  //   { userName: "gdfg", userId: "fdfg" },
+  // ];
 });
 
 app.listen(port, () => {
