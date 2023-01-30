@@ -1,6 +1,7 @@
 import express from "express";
 import { LogNotification } from "./adapter/LogNotification";
 import { MemoryUser } from "./adapter/MemoryUser";
+import { SlowMemoryUser } from "./adapter/SlowMemoryUser";
 import { UserDomain } from "./UserDomain";
 
 const app = express();
@@ -11,10 +12,11 @@ app.get("/", (_req, res) => {
   res.send("Hello World!");
 });
 
-const memoryRepo = new MemoryUser();
+// const memoryRepo = new MemoryUser();
+const slowMemoryUserRepo = new SlowMemoryUser();
 const logService = new LogNotification();
 
-const userDomain = new UserDomain(memoryRepo, logService);
+const userDomain = new UserDomain(slowMemoryUserRepo, logService);
 
 // POST /user
 // 201 OK or KO
