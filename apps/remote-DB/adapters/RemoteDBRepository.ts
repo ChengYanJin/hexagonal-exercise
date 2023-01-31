@@ -1,13 +1,12 @@
-import { v4 as uuidv4 } from "uuid";
-import { UserRepository, User } from "../RemoteDBDomain";
+import { UserRepository, User } from "../CacheMemoryUser";
 
 export class RemoteDBRepository implements UserRepository {
   users: User[];
   constructor() {
     this.users = [];
   }
-  async create(name: string, email: string): Promise<User> {
-    const newUser = { id: uuidv4(), name: name, email: email };
+  async create(name: string, email: string, id: string): Promise<User> {
+    const newUser = { name, email, id };
     this.users.push(newUser);
     return newUser;
   }

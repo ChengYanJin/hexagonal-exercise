@@ -1,11 +1,9 @@
 import express from "express";
-import { RedisCacheRepository } from "./apps/remote-DB/adapters/RedisCacheRepository";
 import { RemoteDBRepository } from "./apps/remote-DB/adapters/RemoteDBRepository";
-import { RemoteDBDomain } from "./apps/remote-DB/RemoteDBDomain";
-import { CacheMemoryUser } from "./apps/users/adapters/CacheMemoryUser";
+import { RedisCacheRepository } from "./apps/remote-DB/adapters/RedisCacheRepository";
+import { CacheMemoryUser } from "./apps/remote-DB/CacheMemoryUser";
 import { LogNotification } from "./apps/users/adapters/LogNotification";
 import { MemoryUser } from "./apps/users/adapters/MemoryUser";
-
 import { UserDomain } from "./apps/users/UserDomain";
 
 const app = express();
@@ -20,15 +18,11 @@ const logService = new LogNotification();
 
 const cacheRepo = new RedisCacheRepository();
 const dbRepo = new RemoteDBRepository();
-const remoteDBDomain = new RemoteDBDomain(cacheRepo, dbRepo);
+const cacheUser = new CacheMemoryUser(cacheRepo, dbRepo);
 
-const cacheUser = new CacheMemoryUser(remoteDBDomain);
+// If we want to switch the store of user from memory to cache, we only need to change this.
 // const userDomain = new UserDomain(memoryRepo, logService);
 const userDomain = new UserDomain(cacheUser, logService);
-
-// POST /user
-// 201 OK or KO
-// { userId: 'xcdfws' userName: 'yanjin' }
 
 app.get("/user", (req, res) => {
   // Create User
@@ -50,29 +44,9 @@ app.get("/user", (req, res) => {
 
 app.get("/users", async (req, res) => {
   const users = await userDomain.list();
-  console.log("users", users);
   res.send(users);
-  // [
-  //   { userName: "yanjin", userId: "vsdvsd" },
-  //   { userName: "gdfg", userId: "fdfg" },
-  // ];
 });
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
-
-// Create user
-// when we create user -> send a email
-// With hexagonal architecture
-
-// User can be created via:
-// DB <=> (Keycloak)
-// API <=> (Mock)
-// MemoryUser <=> (CLI)
-
-// Send notification via:
-// SMS <=> (Keycloak)
-// Slack <=> (Mock)
-// Email <=> (CLI)
-// Log
