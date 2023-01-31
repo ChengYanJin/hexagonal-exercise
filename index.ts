@@ -1,22 +1,30 @@
 import express from "express";
-import { LogNotification } from "./adapter/LogNotification";
-import { MemoryUser } from "./adapter/MemoryUser";
-import { SlowMemoryUser } from "./adapter/SlowMemoryUser";
-import { UserDomain } from "./UserDomain";
+import { RedisCacheRepository } from "./apps/remote-DB/adapters/RedisCacheRepository";
+import { RemoteDBRepository } from "./apps/remote-DB/adapters/RemoteDBRepository";
+import { RemoteDBDomain } from "./apps/remote-DB/RemoteDBDomain";
+import { CacheMemoryUser } from "./apps/users/adapters/CacheMemoryUser";
+import { LogNotification } from "./apps/users/adapters/LogNotification";
+import { MemoryUser } from "./apps/users/adapters/MemoryUser";
+
+import { UserDomain } from "./apps/users/UserDomain";
 
 const app = express();
 const port = 3000;
 
 app.get("/", (_req, res) => {
-  console.log("toto");
   res.send("Hello World!");
 });
 
-// const memoryRepo = new MemoryUser();
-const slowMemoryUserRepo = new SlowMemoryUser();
+const memoryRepo = new MemoryUser();
 const logService = new LogNotification();
 
-const userDomain = new UserDomain(slowMemoryUserRepo, logService);
+const cacheRepo = new RedisCacheRepository();
+const dbRepo = new RemoteDBRepository();
+const remoteDBDomain = new RemoteDBDomain(cacheRepo, dbRepo);
+
+const cacheUser = new CacheMemoryUser(remoteDBDomain);
+// const userDomain = new UserDomain(memoryRepo, logService);
+const userDomain = new UserDomain(cacheUser, logService);
 
 // POST /user
 // 201 OK or KO

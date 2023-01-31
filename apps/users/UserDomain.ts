@@ -17,6 +17,10 @@ export interface UserRepository {
   list(): Promise<User[]>;
 }
 
+export interface UserCache {
+  //
+}
+
 // Domain
 export class UserDomain {
   userRepo: UserRepository;

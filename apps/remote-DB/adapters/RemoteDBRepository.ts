@@ -1,8 +1,9 @@
-import { User, UserRepository } from "../UserDomain";
 import { v4 as uuidv4 } from "uuid";
+import { UserRepository, User } from "../RemoteDBDomain";
 
-export class SlowMemoryUser implements UserRepository {
-  constructor(private users: User[] = []) {
+export class RemoteDBRepository implements UserRepository {
+  users: User[];
+  constructor() {
     this.users = [];
   }
   async create(name: string, email: string): Promise<User> {
